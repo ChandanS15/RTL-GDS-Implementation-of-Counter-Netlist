@@ -1,0 +1,1 @@
+RTL coding is the way of converting design specification into set of high-level design using Hardware Description language called verilog
