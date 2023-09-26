@@ -164,3 +164,123 @@ In the above image we can see the counter being synthesised into its correspondi
 
 <h2> Digital Implementation using Innovus</h2>
 
+<h4>The following steps are performed in the Digital Implementation stage</h4>
+
+> 
+● Floorplanning\
+● Powerplanning- Vdd, Vss\
+● Pin placement\
+● Placement of cells\
+● Pre-CTS timing\
+● Clock tree synthesis (CTS)\
+● Post-CTS timing\
+● Routing and report timing \
+● DRC and LVS checks\
+● Extract RC, streamout layout
+
+<h4> Floorplanning </h4>
+
+Floorplanning is the process of deriving the die size, allocating space for soft blocks, 
+planning power, and macro placement.
+
+
+>![Analysis View](image.png)
+above 
+
+>
+```tcl
+
+create_library_set -name max_timing\
+   -timing ../lib/slow_vdd1v0_basicCells.lib
+
+create_library_set -name min_timing\
+   -timing ../lib/fast_vdd1v0_basicCells.lib
+
+create_timing_condition -name default_mapping_tc_2\
+   -library_sets min_timing
+create_timing_condition -name default_mapping_tc_1\
+   -library_sets max_timing
+
+create_rc_corner -name rccorners\
+   -cap_table ../captable/cln28hpl_1p10m+alrdl_5x2yu2yz_typical.capTbl\
+   -pre_route_res 1\
+   -post_route_res 1\
+   -pre_route_cap 1\
+   -post_route_cap 1\
+   -post_route_cross_cap 1\
+   -pre_route_clock_res 0\
+   -pre_route_clock_cap 0\
+   -qrc_tech ../QRC_Tech/gpdk045.tch
+
+create_delay_corner -name max_delay\
+   -timing_condition {default_mapping_tc_1}\
+   -rc_corner rccorners
+create_delay_corner -name min_delay\
+   -timing_condition {default_mapping_tc_2}\
+   -rc_corner rccorners
+
+create_constraint_mode -name sdc_cons\
+   -sdc_files\
+    counter_sdc.sdc 
+
+create_analysis_view -name wc -constraint_mode sdc_cons -delay_corner max_delay
+create_analysis_view -name bc -constraint_mode sdc_cons -delay_corner min_delay
+
+set_analysis_view -setup wc -hold bc
+
+```
+
+![Floorplanning](image-1.png)
+
+
+
+The above image shows the analysis view where the delay corners, constraint mode, RC corners and timing condition are set during floorplanning.
+
+> <h3> Power Rings</h3>
+![Power Rings](image-2.png)
+
+
+<h3> Power Routing </h3>
+Power routing is the process of connecting the local power routes to the global power that were created during an earlier step of power planning. 
+
+> <h3> Power Stripes</h3>
+![Power Stripes](image-3.png)
+
+
+> <h3> Power Rails</h3>
+![Alt text](image-4.png)
+
+
+> <h2> Placement</h2>
+Placement is the process of placing the standard cells and blocks in a floorplanned design.
+
+Optimization is the process of iterating through a design such that it meets timing, area, and power specifications.
+
+
+>In general, optimization can be broken down into the following areas:
+▪ Timing\
+▪ Signal integrity\
+▪ Power\
+▪ Area
+
+>Depending on the stage of the design, optimization can include the following operations:
+● Adding buffers\
+● Resizing gates\
+● Restructuring the netlist\
+● Remapping logic\
+● Swapping pins\
+● Deleting buffers\
+● Moving instances\
+● Applying useful skew\
+● Layer optimization\
+● Track optimization
+
+
+<h2> Clock Tree Synthesis </h2>
+
+
+Clock Tree Synthesis is the process of inserting buffers in the clock path, with the goal of minimizing clock skew and latency to optimize timing.
+
+<h2> Routing</h2>
+
+Detail routing is the process of connecting the cells and macros in the design on metal layers specified in the technology LEF file that is generally provided by the foundry so that the routes are DRC correct and timing and signal-integrity aware.
